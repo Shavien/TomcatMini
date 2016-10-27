@@ -11,7 +11,7 @@ import java.net.Socket;
 public class TomcatServer {
 
     public static void main(String[] args) {
-
+        new TomcatServer().startServer();
     }
 
     private void startServer() {
@@ -33,8 +33,19 @@ public class TomcatServer {
                 inputStream = socket.getInputStream();
                 outputStream = socket.getOutputStream();
                 Request request = new Request(inputStream);
+                request.parseHttpData();
+                Response response = new Response(outputStream);
+                System.out.println(request.getUri());
+                if(request.getUri().startsWith("/servlet/")){
+                    ServletProcessor processor = new ServletProcessor(request,response);
+                    processor.doResponse();
+                }else{
+                    StaticProcessor processor = new StaticProcessor(outputStream,request);
+                    processor.doResponse();
+                }
+                socket.close();
             }catch (Exception e){
-                e.printStackTrace();
+                System.out.println(e);
             }
         }
     }

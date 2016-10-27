@@ -12,21 +12,39 @@ import java.util.Map;
 /**
  * Created by Shavien on 2016/10/27.^_^
  */
-public class Request implements ServletRequest{
-    InputStream inputStream = null;
+public class Request implements ServletRequest {
+    private InputStream inputStream = null;
+    private String uri;
 
-    public Request(InputStream inputStream){
+    public Request(InputStream inputStream) {
         this.inputStream = inputStream;
     }
 
-    public void parseHttpData(){
-        StringBuffer stringBuffer = new StringBuffer();
-        byte[] buffer = new byte[2048];
-
+    public String getUri() {
+        return uri;
     }
 
-    public String getRequestUri(){
+    public void parseHttpData() {
+        StringBuffer stringBuffer = new StringBuffer();
+        byte[] buffer = new byte[2048];
+        int ch = 0;
+        try {
+            ch = inputStream.read(buffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            ch = -1;
+        }
+        for (int i = 0; i < ch; i++) {
+            stringBuffer.append((char) buffer[i]);
+        }
+        uri = parseRequestUri(stringBuffer.toString());
+    }
 
+    public String parseRequestUri(String httpData) {
+        int index1, index2;
+        index1 = httpData.indexOf(" ");
+        index2 = httpData.indexOf(" ", index1 + 1);
+        return index2 > index1 ? httpData.substring(index1 + 1, index2) : null;//substring from start to end-1
     }
 
     public Object getAttribute(String s) {
